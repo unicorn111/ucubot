@@ -109,8 +109,8 @@ namespace usubot.End2EndTests
         public void Test_LessonSignal_TableWasCreated()
         {
             // create database test
-            var dbScript = ReadMysqlScript("lesson-singal");
-            var dbScript2 = ReadMysqlScript("lesson-singal2");
+            var dbScript = ReadMysqlScript("lesson-signal");
+            var dbScript2 = ReadMysqlScript("lesson-signal2");
             using (var conn = new MySqlConnection(CONNECTION_STRING))
             {
                 conn.Open();

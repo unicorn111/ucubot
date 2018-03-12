@@ -5,4 +5,4 @@ WORKDIR /app/usubot.End2EndTests
 
 RUN dotnet restore
 
-ENTRYPOINT ["dotnet", "test", "-v", "m", "--filter", "TestCategory=Assignment1"]
+ENTRYPOINT ["dotnet", "test", "-v", "m", "--filter", "TestCategory=Assignment2"]
