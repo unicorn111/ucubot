@@ -35,7 +35,7 @@ namespace usubot.End2EndTests
         public void Preparation()
         {
             // HACK: waits few seconds to give a time for mysql container to start
-            Thread.Sleep(10000);
+            Thread.Sleep(3000);
             Assert.That(true);
             
             // clean data
@@ -143,9 +143,9 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
             // create
             var content = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>("user_id", "U111"),
-                new KeyValuePair<string, string>("first_name", "vasya"),
-                new KeyValuePair<string, string>("last_name", "popov")
+                new KeyValuePair<string, string>("UserId", "U111"),
+                new KeyValuePair<string, string>("FirstName", "vasya"),
+                new KeyValuePair<string, string>("LastName", "popov")
             });
             var createResponse = await _client.PostAsync("/api/StudentEndpoint", content);
             createResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
@@ -156,14 +156,15 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
             values.Length.Should().Be(1);
             values[0].UserId.Should().Be("U111");
             values[0].FirstName.Should().Be("vasya");
-            values[0].FirstName.Should().Be("popov");
+            values[0].LastName.Should().Be("popov");
             
             // update
             content = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>("user_id", "U111"),
-                new KeyValuePair<string, string>("first_name", "vasya"),
-                new KeyValuePair<string, string>("last_name", "petrov")
+                new KeyValuePair<string, string>("Id", values[0].Id.ToString()),
+                new KeyValuePair<string, string>("UserId", "U111"),
+                new KeyValuePair<string, string>("FirstName", "vasya"),
+                new KeyValuePair<string, string>("LastName", "petrov")
             });
             var updateResponse = await _client.PutAsync("/api/StudentEndpoint", content);
             updateResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
@@ -174,14 +175,14 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
             values.Length.Should().Be(1);
             values[0].UserId.Should().Be("U111");
             values[0].FirstName.Should().Be("vasya");
-            values[0].FirstName.Should().Be("petrov");
+            values[0].LastName.Should().Be("petrov");
             
             // check by id
             getResponse = await _client.GetStringAsync($"/api/StudentEndpoint/{values[0].Id}");
             var value = ParseJson<Student>(getResponse);
             value.UserId.Should().Be("U111");
             value.FirstName.Should().Be("vasya");
-            value.FirstName.Should().Be("petrov");
+            value.LastName.Should().Be("petrov");
             
             // delete
             var deleteResponse = await _client.DeleteAsync($"/api/StudentEndpoint/{values[0].Id}");
@@ -204,9 +205,9 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
             // create another with attack
             var content = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>("user_id", "U111', 0); DELETE FROM lesson_signal; #"),
-                new KeyValuePair<string, string>("first_name", "1"),
-                new KeyValuePair<string, string>("last_name", "2")
+                new KeyValuePair<string, string>("UserId", "U111', 0); DELETE FROM lesson_signal; #"),
+                new KeyValuePair<string, string>("FirstName", "1"),
+                new KeyValuePair<string, string>("LastName", "2")
             });
             var createResponse = await _client.PostAsync("/api/StudentEndpoint", content);
             createResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
@@ -242,9 +243,9 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
             // create new
             var content = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>("user_id", "U111"),
-                new KeyValuePair<string, string>("first_name", "1"),
-                new KeyValuePair<string, string>("last_name", "2")
+                new KeyValuePair<string, string>("UserId", "U111"),
+                new KeyValuePair<string, string>("FirstName", "1"),
+                new KeyValuePair<string, string>("LastName", "2")
             });
             var createResponse = await _client.PostAsync("/api/StudentEndpoint", content);
             createResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
@@ -252,12 +253,12 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
             // create second with the same user_id
             content = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>("user_id", "U111"),
-                new KeyValuePair<string, string>("first_name", "1"),
-                new KeyValuePair<string, string>("last_name", "2")
+                new KeyValuePair<string, string>("UserId", "U111"),
+                new KeyValuePair<string, string>("FirstName", "1"),
+                new KeyValuePair<string, string>("LastName", "2")
             });
             createResponse = await _client.PostAsync("/api/StudentEndpoint", content);
-            createResponse.StatusCode.Should().NotBe(HttpStatusCode.Accepted);
+            createResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
             
             // check
             getResponse = await _client.GetStringAsync("/api/StudentEndpoint");
@@ -305,7 +306,7 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
             // get previous values
             var getResponse = await _client.GetStringAsync("/api/LessonSignalEndpoint");
             var values = ParseJson<LessonSignalDto[]>(getResponse);
-            var newId = values.Select(v => v.Id).Max() + 1;
+            var newId = values.Length > 0 ? values.Select(v => v.Id).Max() + 1 : 1;
             
             // check
             var response = await _client.GetAsync($"/api/LessonSignalEndpoint/{newId}");
@@ -337,8 +338,7 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
             // check students non empty
             var getResponseStudents = await _client.GetStringAsync("/api/StudentEndpoint");
             var valuesStudents = ParseJson<Student[]>(getResponseStudents);
-            valuesStudents.Length.Should().Be(1);
-            valuesStudents[0].UserId.Should().Be("U111");
+            valuesStudents.Length.Should().Be(2);
             
             // check lesson signal is empty
             var getResponse = await _client.GetStringAsync("/api/LessonSignalEndpoint");
@@ -348,27 +348,32 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
             // create lesson signal with user_id already exists
             var content = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>("user_id", "U111"),
+                new KeyValuePair<string, string>("user_id", valuesStudents[0].UserId),
                 new KeyValuePair<string, string>("text", "simple")
             });
             var createResponse = await _client.PostAsync("/api/LessonSignalEndpoint", content);
             createResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
             
-            // delete student
-            var deleteResponse1 = await _client.DeleteAsync($"/api/Student/{valuesStudents[0].Id}");
-            deleteResponse1.StatusCode.Should().NotBe(HttpStatusCode.Accepted);
-            
-            // check ls
+            // check lesson signal is non empty
             getResponse = await _client.GetStringAsync("/api/LessonSignalEndpoint");
             values = ParseJson<LessonSignalDto[]>(getResponse);
             values.Length.Should().Be(1);
+            
+            // try delete student
+            var deleteResponse1 = await _client.DeleteAsync($"/api/StudentEndpoint/{valuesStudents[0].Id}");
+            deleteResponse1.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            
+            // check ls
+            getResponse = await _client.GetStringAsync("/api/StudentEndpoint");
+            valuesStudents = ParseJson<Student[]>(getResponse);
+            valuesStudents.Length.Should().Be(2);
             
             // delete lesson signal
             var deleteResponse = await _client.DeleteAsync($"/api/LessonSignalEndpoint/{values[0].Id}");
             deleteResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
             
             // delete student
-            var deleteResponse2 = await _client.DeleteAsync($"/api/Student/{valuesStudents[0].Id}");
+            var deleteResponse2 = await _client.DeleteAsync($"/api/StudentEndpoint/{valuesStudents[0].Id}");
             deleteResponse2.StatusCode.Should().Be(HttpStatusCode.Accepted);
         }
 
