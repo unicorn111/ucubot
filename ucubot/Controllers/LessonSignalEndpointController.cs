@@ -41,9 +41,9 @@ namespace ucubot.Controllers
                 _msqlConnection.Close();
                 return lst;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine(e);
                 _msqlConnection.Close();
                 return null;
             }
@@ -59,15 +59,15 @@ namespace ucubot.Controllers
                         "lesson_signal.signal_type as Type, student.user_id as UserId FROM lesson_signal" +
                         " JOIN student ON lesson_signal.student_id = student.id WHERE lesson_signal.Id = @id;";
                 var signalDto = _msqlConnection.Query<LessonSignalDto>(comm).ToList();
+                _msqlConnection.Close();
                 return signalDto.First();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine(e);
                 _msqlConnection.Close();
                 return null;
             }
-
         }
 
         [HttpPost]
@@ -87,6 +87,8 @@ namespace ucubot.Controllers
                 }
                 var comm2 = "INSERT INTO lesson_signal (student_id, signal_type) VALUES (@std, @st)";
                 connection.Execute(comm2, new {std = stds[0].Id, st = signalType});
+                _msqlConnection.Close();
+                return Accepted();
             }
             catch (Exception ex)
             {
@@ -94,17 +96,18 @@ namespace ucubot.Controllers
                 _msqlConnection.Close();
                 return NotFound();
             }
-            _msqlConnection.Close();
-            return Accepted();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoveSignal(long id)
         {
             _msqlConnection.Open();
-            try{
-            var com = "DELETE FROM lesson_signal WHERE id=@id;";
-             _msqlConnection.Execute(com, new {Id = id});
+            try
+            {
+                var com = "DELETE FROM lesson_signal WHERE id=@id;";
+                _msqlConnection.Execute(com, new {Id = id});
+                _msqlConnection.Close();
+                return Accepted();
             }
             catch (Exception e)
             {
@@ -112,10 +115,6 @@ namespace ucubot.Controllers
                 _msqlConnection.Close();
                 return NotFound();
             }
-            
-            _msqlConnection.Close();
-            return Accepted();
-            
         }
     }
 }
