@@ -40,7 +40,7 @@ namespace ucubot.Controllers
                 _msqlConnection.Close();
                 return lst;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 _msqlConnection.Close();
                 return null;
@@ -60,7 +60,7 @@ namespace ucubot.Controllers
                 _msqlConnection.Close();
                 return std.First();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 _msqlConnection.Close();
                 return null;
@@ -102,12 +102,30 @@ namespace ucubot.Controllers
                 conn.Execute(comm, new {first_name = fName, last_name = lName, user_id = uId});
                 _msqlConnection.Close();
             }
-            catch (MySqlException e)
+            catch (Exception e)
             {
                 _msqlConnection.Close();
                 return HttpStatusCode.Conflict;
             }
             return HttpStatusCode.OK;
-        }
+       }
+       
+       [HttpDelete("{id}")]
+       public async  Task<HttpStatusCode> RemoveStudent(long id)
+       {
+          _msqlConnection.Open();           
+           var comm = "DELETE FROM student WHERE id = @id;";
+           try
+           {
+               _msqlConnection.Execute(com, new {Id = id});
+               _msqlConnection.Close();
+           }
+           catch (Exception e)
+           {
+               _msqlConnection.Close();
+               return HttpStatusCode.Conflict;
+           }
+           return HttpStatusCode.OK;
+       }
     }
 }
