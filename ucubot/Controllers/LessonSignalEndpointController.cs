@@ -37,7 +37,7 @@ namespace ucubot.Controllers
                 var j = "SELECT lesson_signal.Id as Id, lesson_signal.Timestemp as Timestamp, " +
                         "lesson_signal.signal_type as Type, student.user_id as UserId FROM lesson_signal" +
                         " JOIN student ON lesson_signal.student_id = student.id;";
-                var lst = _msqlConnection.Query<LessonSignalDto>(j);
+                var lst = _msqlConnection.Query<LessonSignalDto>(j).ToList();
                 _msqlConnection.Close();
                 return lst;
             }
