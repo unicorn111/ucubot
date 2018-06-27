@@ -83,7 +83,7 @@ namespace ucubot.Controllers
                 if (!stds.Any())
                 {
                     _msqlConnection.Close();
-                    return NotFound();
+                    return BadRequest();
                 }
                 var comm2 = "INSERT INTO lesson_signal (student_id, signal_type) VALUES (@std, @st)";
                 connection.Execute(comm2, new {std = stds[0].Id, st = signalType});
