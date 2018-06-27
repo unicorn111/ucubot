@@ -34,15 +34,14 @@ namespace ucubot.Controllers
             try
             {
                 _msqlConnection.Open();
-                var j = "SELECT student.Id as Id, student.firstname as FirstName, " +
+                var comm = "SELECT student.Id as Id, student.firstname as FirstName, " +
                         "student.lastname as LastName, student.user_id as UserId FROM student;";
-                var lst = _msqlConnection.Query<LessonSignalDto>(j);
+                var lst = _msqlConnection.Query<LessonSignalDto>(comm).ToList();
                 _msqlConnection.Close();
                 return lst;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
                 _msqlConnection.Close();
                 return null;
             }
@@ -54,16 +53,15 @@ namespace ucubot.Controllers
             try
             {
                 _msqlConnection.Open();
-                var j = "SELECT student.Id as Id, student.firstname as FirstName, " +
+                var comm = "SELECT student.Id as Id, student.firstname as FirstName, " +
                         "student.lastname as LastName, student.user_id as UserId FROM student WHERE" +
                         " student.Id = @id;";
-                var std = _msqlConnection.Query<LessonSignalDto>(j);
+                var std = _msqlConnection.Query<LessonSignalDto>(comm).ToList();
                 _msqlConnection.Close();
                 return std.First();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
                 _msqlConnection.Close();
                 return null;
             }
@@ -73,25 +71,22 @@ namespace ucubot.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRecord(Student std)
         {
+            _msqlConnection.Open();
+            var uId = std.UserId;
+            var fName = std.FirstName;
+            var lName = std.LastName;
+            var comm = "INSERT INTO student(first_name, last_name, user_id) VALUES(@first_name, @last_name, @user_id);";
             try
             {
-                _msqlConnection.Open();
-                var userId = std.UserId;
-                var j = "SELECT student.Id as Id, student.firstname as FirstName, " +
-                        "student.lastname as LastName, student.user_id as UserId FROM student WHERE" +
-                        " student.Id = @userId;";
-                var signalDto = _msqlConnection.Query<Student>(j);
+                conn.Execute(comm, new {first_name = fName, last_name = lName, user_id = uId});
                 _msqlConnection.Close();
-                return Accepted();
             }
-            
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex);
                 _msqlConnection.Close();
-                return NotFound();
+                return HttpStatusCode.Conflict;
             }
-            
-        }
+            return HttpStatusCode.OK;
+       }
     }
 }
