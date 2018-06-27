@@ -11,5 +11,6 @@
     <PackageReference Include="MySql.Data" Version="6.10.5" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="Ninject" Version="4.0.0-beta-0134" />
+    <PackageReference Include="Dapper" Version="1.50.4" />
   </ItemGroup>
 </Project>
