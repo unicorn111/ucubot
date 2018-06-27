@@ -69,12 +69,12 @@ namespace ucubot.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateRecord(Student std)
+        public async Task<IActionResult> CreateRecord(Student student)
         {
             _msqlConnection.Open();
-            var uId = std.UserId;
-            var fName = std.FirstName;
-            var lName = std.LastName;
+            var uId = student.UserId;
+            var fName = student.FirstName;
+            var lName = student.LastName;
             var comm = "INSERT INTO student(first_name, last_name, user_id) VALUES(@first_name, @last_name, @user_id);";
             try
             {
@@ -88,5 +88,26 @@ namespace ucubot.Controllers
             }
             return HttpStatusCode.OK;
        }
+       
+       [HttpPut]
+       public async Task<HttpStatusCode> UpdateStudent(Student student)
+       {
+            _msqlConnection.Open();
+            var uId = student.UserId;
+            var fName = student.FirstName;
+            var lName = student.LastName;
+            var comm = "UPDATE student set first_name =@first, last_name = @second, user_id = @uid  where id = @uuid;";
+            try
+            {
+                conn.Execute(comm, new {first_name = fName, last_name = lName, user_id = uId});
+                _msqlConnection.Close();
+            }
+            catch (MySqlException e)
+            {
+                _msqlConnection.Close();
+                return HttpStatusCode.Conflict;
+            }
+            return HttpStatusCode.OK;
+        }
     }
 }
