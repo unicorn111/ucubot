@@ -34,10 +34,10 @@ namespace ucubot.Controllers
             try
             {
                 _msqlConnection.Open();
-                var j = "SELECT lesson_signal.Id as Id, lesson_signal.Timestemp as Timestamp, " +
+                var comm = "SELECT lesson_signal.Id as Id, lesson_signal.Timestemp as Timestamp, " +
                         "lesson_signal.signal_type as Type, student.user_id as UserId FROM lesson_signal" +
                         " JOIN student ON lesson_signal.student_id = student.id;";
-                var lst = _msqlConnection.Query<LessonSignalDto>(j).ToList();
+                var lst = _msqlConnection.Query<LessonSignalDto>(comm).ToList();
                 _msqlConnection.Close();
                 return lst;
             }
@@ -55,10 +55,10 @@ namespace ucubot.Controllers
             try
             {
                 _msqlConnection.Open();
-                var j = "SELECT lesson_signal.Id as Id, lesson_signal.Timestemp as Timestamp, " +
+                var comm = "SELECT lesson_signal.Id as Id, lesson_signal.Timestemp as Timestamp, " +
                         "lesson_signal.signal_type as Type, student.user_id as UserId FROM lesson_signal" +
                         " JOIN student ON lesson_signal.student_id = student.id WHERE lesson_signal.Id = @id;";
-                var signalDto = _msqlConnection.Query<LessonSignalDto>(j);
+                var signalDto = _msqlConnection.Query<LessonSignalDto>(comm).ToList();
                 return signalDto.First();
             }
             catch (Exception ex)
@@ -75,32 +75,18 @@ namespace ucubot.Controllers
         {
             try
             {
+                _msqlConnection.Open();
                 var userId = message.user_id;
                 var signalType = message.text.ConvertSlackMessageToSignalType();
-                var checkUser = new MySqlCommand("SELECT * FROM student WHERE id = @userId", _msqlConnection);
-                MySqlDataAdapter adapter = new MySqlDataAdapter(checkUser);
-                DataSet dataset = new DataSet();
-                adapter.Fill(dataset, "lesson_signal");
-                if (dataset.Tables[0].Rows.Count < 1)
+                var comm = "SELECT id as Id, first_name as FirstName, last_name as LastName, user_id as UserId from student where user_id=@uId";
+                _msqlConnection.Query<Student>(comm, new {uId = userId}).AsList(););
+                if (!stds.Any())
                 {
                     _msqlConnection.Close();
-                    return BadRequest();
+                    return NotFound();
                 }
-
-                checkUser.Parameters.AddWithValue("id", userId);
-
-                _msqlConnection.Open();
-                var command = _msqlConnection.CreateCommand();
-                command.CommandText =
-                    "INSERT INTO lesson_signal (user_id, signal_type) VALUES (@userId, @signalType);";
-                command.Parameters.AddRange(new[]
-                {
-                    new MySqlParameter("userId", userId),
-                    new MySqlParameter("signalType", signalType)
-                });
-                await command.ExecuteNonQueryAsync();
-                _msqlConnection.Close();
-                return Accepted();
+                var comm2 = "INSERT INTO lesson_signal (student_id, signal_type) VALUES (@std, @st)";
+                connection.Execute(comm2, new {std = stds[0].Id, st = signalType});
             }
             catch (Exception ex)
             {
@@ -108,19 +94,28 @@ namespace ucubot.Controllers
                 _msqlConnection.Close();
                 return NotFound();
             }
+            _msqlConnection.Close();
+            return Accepted();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoveSignal(long id)
         {
             _msqlConnection.Open();
-                var command = _msqlConnection.CreateCommand();
-                command.CommandText =
-                    "DELETE FROM lesson_signal WHERE ID = @id;";
-            	command.Parameters.Add(new MySqlParameter("id", id));
-                await command.ExecuteNonQueryAsync();
+            try{
+            var com = "DELETE FROM lesson_signal WHERE id=@id;";
+             _msqlConnection.Execute(com, new {Id = id});
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                _msqlConnection.Close();
+                return NotFound();
+            }
+            
             _msqlConnection.Close();
             return Accepted();
+            
         }
     }
 }
