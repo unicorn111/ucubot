@@ -148,7 +148,7 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
                 new KeyValuePair<string, string>("LastName", "popov")
             });
             var createResponse = await _client.PostAsync("/api/StudentEndpoint", content);
-            createResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+            Assert.IsTrue(new[] {HttpStatusCode.OK, HttpStatusCode.Accepted}.Contains(createResponse.StatusCode));
             
             // check
             getResponse = await _client.GetStringAsync("/api/StudentEndpoint");
@@ -167,7 +167,7 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
                 new KeyValuePair<string, string>("LastName", "petrov")
             });
             var updateResponse = await _client.PutAsync("/api/StudentEndpoint", content);
-            updateResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+            Assert.IsTrue(new[] {HttpStatusCode.OK, HttpStatusCode.Accepted}.Contains(updateResponse.StatusCode));
             
             // check
             getResponse = await _client.GetStringAsync("/api/StudentEndpoint");
@@ -186,7 +186,7 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
             
             // delete
             var deleteResponse = await _client.DeleteAsync($"/api/StudentEndpoint/{values[0].Id}");
-            deleteResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+            Assert.IsTrue(new[] {HttpStatusCode.OK, HttpStatusCode.Accepted}.Contains(deleteResponse.StatusCode));
             
             // check
             getResponse = await _client.GetStringAsync("/api/StudentEndpoint");
@@ -210,7 +210,7 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
                 new KeyValuePair<string, string>("LastName", "2")
             });
             var createResponse = await _client.PostAsync("/api/StudentEndpoint", content);
-            createResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+            Assert.IsTrue(new[] {HttpStatusCode.OK, HttpStatusCode.Accepted}.Contains(createResponse.StatusCode));
             
             // check
             getResponse = await _client.GetStringAsync("/api/StudentEndpoint");
@@ -248,7 +248,7 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
                 new KeyValuePair<string, string>("LastName", "2")
             });
             var createResponse = await _client.PostAsync("/api/StudentEndpoint", content);
-            createResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+            Assert.IsTrue(new[] {HttpStatusCode.OK, HttpStatusCode.Accepted}.Contains(createResponse.StatusCode));
             
             // create second with the same user_id
             content = new FormUrlEncodedContent(new[]
@@ -281,7 +281,7 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
                 new KeyValuePair<string, string>("text", "simple")
             });
             var createResponse = await _client.PostAsync("/api/LessonSignalEndpoint", content);
-            createResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+            Assert.IsTrue(new[] {HttpStatusCode.OK, HttpStatusCode.Accepted}.Contains(createResponse.StatusCode));
             
             // check
             getResponse = await _client.GetStringAsync("/api/LessonSignalEndpoint");
@@ -292,7 +292,7 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
             
             // delete
             var deleteResponse = await _client.DeleteAsync($"/api/LessonSignalEndpoint/{values[0].Id}");
-            deleteResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+            Assert.IsTrue(new[] {HttpStatusCode.OK, HttpStatusCode.Accepted}.Contains(deleteResponse.StatusCode));
             
             // check
             getResponse = await _client.GetStringAsync("/api/LessonSignalEndpoint");
@@ -352,7 +352,7 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
                 new KeyValuePair<string, string>("text", "simple")
             });
             var createResponse = await _client.PostAsync("/api/LessonSignalEndpoint", content);
-            createResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+            Assert.IsTrue(new[] {HttpStatusCode.OK, HttpStatusCode.Accepted}.Contains(createResponse.StatusCode));
             
             // check lesson signal is non empty
             getResponse = await _client.GetStringAsync("/api/LessonSignalEndpoint");
@@ -370,11 +370,11 @@ FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'ucubo
             
             // delete lesson signal
             var deleteResponse = await _client.DeleteAsync($"/api/LessonSignalEndpoint/{values[0].Id}");
-            deleteResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+            Assert.IsTrue(new[] {HttpStatusCode.OK, HttpStatusCode.Accepted}.Contains(deleteResponse.StatusCode));
             
             // delete student
             var deleteResponse2 = await _client.DeleteAsync($"/api/StudentEndpoint/{valuesStudents[0].Id}");
-            deleteResponse2.StatusCode.Should().Be(HttpStatusCode.Accepted);
+            Assert.IsTrue(new[] {HttpStatusCode.OK, HttpStatusCode.Accepted}.Contains(deleteResponse2.StatusCode));
         }
 
         [TearDown]
