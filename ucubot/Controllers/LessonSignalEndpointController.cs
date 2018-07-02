@@ -79,14 +79,14 @@ namespace ucubot.Controllers
                 var userId = message.user_id;
                 var signalType = message.text.ConvertSlackMessageToSignalType();
                 var comm = "SELECT id as Id, first_name as FirstName, last_name as LastName, user_id as UserId from student where user_id=@uId";
-                _msqlConnection.Query<Student>(comm, new {uId = userId}).AsList(););
-                if (!stds.Any())
+                _msqlConnection.Query<Student>(comm, new {uId = userId}).AsList();
+                if (!comm.Any())
                 {
                     _msqlConnection.Close();
                     return BadRequest();
                 }
                 var comm2 = "INSERT INTO lesson_signal (student_id, signal_type) VALUES (@std, @st)";
-                connection.Execute(comm2, new {std = stds[0].Id, st = signalType});
+                _msqlConnection.Execute(comm2, new {std = comm.First(), st = signalType});
                 _msqlConnection.Close();
                 return Accepted();
             }
