@@ -69,7 +69,7 @@ namespace ucubot.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateRecord(Student student)
+        public async Task<HttpStatusCode> CreateRecord(Student student)
         {
             _msqlConnection.Open();
             var uId = student.UserId;
@@ -78,7 +78,7 @@ namespace ucubot.Controllers
             var comm = "INSERT INTO student(first_name, last_name, user_id) VALUES(@first_name, @last_name, @user_id);";
             try
             {
-                conn.Execute(comm, new {first_name = fName, last_name = lName, user_id = uId});
+                _msqlConnection.Execute(comm, new {first_name = fName, last_name = lName, user_id = uId});
                 _msqlConnection.Close();
             }
             catch
@@ -99,7 +99,7 @@ namespace ucubot.Controllers
             var comm = "UPDATE student set first_name =@first, last_name = @second, user_id = @uid  where id = @uuid;";
             try
             {
-                conn.Execute(comm, new {first_name = fName, last_name = lName, user_id = uId});
+                _msqlConnection.Execute(comm, new {first_name = fName, last_name = lName, user_id = uId});
                 _msqlConnection.Close();
             }
             catch (Exception e)
@@ -117,7 +117,7 @@ namespace ucubot.Controllers
            var comm = "DELETE FROM student WHERE id = @id;";
            try
            {
-               _msqlConnection.Execute(com, new {Id = id});
+               _msqlConnection.Execute(comm, new {Id = id});
                _msqlConnection.Close();
            }
            catch (Exception e)
